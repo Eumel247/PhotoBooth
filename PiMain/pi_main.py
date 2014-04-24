@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import serial #serial communication on?
+import time
 ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
-
 print "pi_main.py running";
 
 
@@ -16,8 +16,19 @@ print "pi_main.py running";
 #        print ser.readline()[:-2]
 
 while True:
-	#ser.write(str(led))
-        print ser.readline()[:-2]
+    data = ser.read(9999)
+    if len(data) > 0:
+        print "Received:", data
+	if data=="gert2pi_shutter":
+    		print "execute shutter";
+  	elif data=="case gert2pi_print":
+    		print "execute print";
+    	else:
+		print "command not known";
+  	
+    #time.sleep(0.5)
+
+
 		
 def pi_getpicture():
    "switches USB on and fetches the latest picture"
@@ -26,7 +37,7 @@ def pi_getpicture():
    #transfer picture to extHDD
    #eject /media/KINGSTON;
    #tell Gertduino to open the relay
-   return;
+   return
    
    
 def pi_photomerge():
@@ -39,5 +50,3 @@ def pi_print():
 	"run after pi_photomerge! prints to Canon Selphy 800"
 	#- Pushbutton: Print
 	return
-
-
