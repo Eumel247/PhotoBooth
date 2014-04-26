@@ -16,16 +16,30 @@ Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
  
  */
 
-int shutterBUT = A2; 	//left push-button
-int printBUT = A3;	//right push-button
-int loopLED = 13;	//LED0
-int shutterLED = 9;	//LED1/D9
-int printLED = 10;	//LED2/D10
-//int LED = 3;		//LED3/D3
+//Rx
+//Tx
+int focusOUT = 2; //D2
+int usbLED = 3;		//LED3/D3
+int shutterOUT = 4; //D4
 //int LED = 5;		//LED4/D5  
 //int LED = 6;		//LED5/D6
-int focusOUT = 2; //D2
-int shutterOUT = 3; //D3
+int usbOUT = 7; //D7
+
+//D8
+int shutterLED = 9;	//LED1/D9
+int printLED = 10;	//LED2/D10
+//D11
+//D12
+int loopLED = 13;	//LED0
+//Gnd
+//
+//
+//
+
+
+int shutterBUT = A2; 	//left push-button
+int printBUT = A3;	//right push-button
+
 
 void setup(){
   Serial.begin(9600); //start serial connection
@@ -35,8 +49,10 @@ void setup(){
   pinMode(loopLED, OUTPUT); // initialize the LED pins as output
   pinMode(shutterLED, OUTPUT);
   pinMode(printLED, OUTPUT); 
+  pinMode(usbLED, OUTPUT); 
   pinMode(focusOUT, OUTPUT); // initialize the focus and shutter pins as output
   pinMode(shutterOUT, OUTPUT);
+  pinMode(usbOUT, OUTPUT); // initialize the output pin which goes to the relay (USB on - off)
   
 
   matrix.begin(0x70);  // pass in the LED-8x8 address
@@ -245,6 +261,8 @@ void loop(){
     delay(1000);
     matrix.clear();
     matrix.writeDisplay();
+    
+    getPicture();
        
   } // else
   
@@ -264,4 +282,14 @@ void takePicture() {
   digitalWrite(shutterOUT, LOW);
 } // takePicture
 
+void getPicture() {
+  digitalWrite(usbLED, HIGH); 
+  // 8x8 Display?
+  digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
+  Serial.println("gert2pi_getPicture"); // tell RPi to get the picture
+  delay(10000); // test
+  // wait for RPi to disconnect USB 
+  digitalWrite(usbOUT, LOW); // USB off
+  digitalWrite(usbLED, HIGH); 
+} // getPicture
 
