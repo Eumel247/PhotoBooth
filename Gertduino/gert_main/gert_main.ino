@@ -35,7 +35,7 @@ void setup(){
   pinMode(loopLED, OUTPUT); // initialize the LED pins as output
   pinMode(shutterLED, OUTPUT);
   pinMode(printLED, OUTPUT); 
-  pinMode(focusOUT, OUTPUT);) // initialize the focus and shutter pins as output
+  pinMode(focusOUT, OUTPUT); // initialize the focus and shutter pins as output
   pinMode(shutterOUT, OUTPUT);
   
 
@@ -239,13 +239,13 @@ void loop(){
     matrix.clear();
     matrix.drawBitmap(0, 0, smile_bmp, 8, 8, LED_GREEN);
     matrix.writeDisplay();
-    delay(1000);
     
+    takePicture(); 
+    
+    delay(1000);
     matrix.clear();
     matrix.writeDisplay();
-    
-    takePicture()
-    
+       
   } // else
   
   if (printVal == HIGH) {
@@ -260,7 +260,7 @@ void loop(){
 
 void takePicture() {
   digitalWrite(shutterOUT, HIGH);
-  delay(1000);
+  delay(2000);
   digitalWrite(shutterOUT, LOW);
 } // takePicture
 
