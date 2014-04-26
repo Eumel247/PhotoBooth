@@ -19,21 +19,25 @@ Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
 int shutterBUT = A2; 	//left push-button
 int printBUT = A3;	//right push-button
 int loopLED = 13;	//LED0
-int shutterLED = 9;	//LED1
-int printLED = 10;	//LED2
-//int LED = 4;		//LED3
-//int LED = 6;		//LED4
-//int LED = 7;		//LED5
+int shutterLED = 9;	//LED1/D9
+int printLED = 10;	//LED2/D10
+//int LED = 3;		//LED3/D3
+//int LED = 5;		//LED4/D5  
+//int LED = 6;		//LED5/D6
+int focusOUT = 2; //D2
+int shutterOUT = 3; //D3
 
 void setup(){
   Serial.begin(9600); //start serial connection
-
 
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
   pinMode(printBUT, INPUT_PULLUP);
   pinMode(loopLED, OUTPUT); // initialize the LED pins as output
   pinMode(shutterLED, OUTPUT);
-  pinMode(printLED, OUTPUT);
+  pinMode(printLED, OUTPUT); 
+  pinMode(focusOUT, OUTPUT);) // initialize the focus and shutter pins as output
+  pinMode(shutterOUT, OUTPUT);
+  
 
   matrix.begin(0x70);  // pass in the LED-8x8 address
 }
@@ -168,15 +172,7 @@ void loop(){
   else {
     digitalWrite(shutterLED, HIGH);
     Serial.println("gert2pi_shutter");
-    delay(1000);
-  }
-  if (printVal == HIGH) {
-    digitalWrite(printLED, LOW);
-  }
-  else {
-    digitalWrite(printLED, HIGH);
-    Serial.println("gert2pi_print");
-      
+    
     matrix.clear();
     matrix.fillRect(0,0, 8,8, LED_RED);
     //matrix.fillRect(2,2, 4,4, LED_GREEN);
@@ -192,7 +188,7 @@ void loop(){
       matrix.print("Foto in");
       matrix.writeDisplay();
       delay(40);
-    }
+    } // for
     
     //Countdown      
     matrix.clear();
@@ -247,6 +243,25 @@ void loop(){
     
     matrix.clear();
     matrix.writeDisplay();
-  }
-}
+    
+    takePicture()
+    
+  } // else
+  
+  if (printVal == HIGH) {
+    digitalWrite(printLED, LOW);
+  } // if
+  else {
+    digitalWrite(printLED, HIGH);
+    Serial.println("gert2pi_print");
+    delay(1000);
+  } // else
+} // loop
+
+void takePicture() {
+  digitalWrite(shutterOUT, HIGH);
+  delay(1000);
+  digitalWrite(shutterOUT, LOW);
+} // takePicture
+
 
