@@ -290,6 +290,6 @@ void getPicture() {
   delay(10000); // test
   // wait for RPi to disconnect USB 
   digitalWrite(usbOUT, LOW); // USB off
-  digitalWrite(usbLED, HIGH); 
+  digitalWrite(usbLED, LOW); 
 } // getPicture
 
