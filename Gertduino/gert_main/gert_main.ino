@@ -19,27 +19,27 @@ Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
 //Rx
 //Tx
 //int = 2; //D2
-int statusLED = 3;		//LED3/D3 blue LED
+int statusLED = 3; //LED3/D3 blue LED
 //int = 4; //D4
-int warnLED = 5;	//LED4/D5 red LED
-int loopLED= 6;	//LED5/D6
+int warnLED = 5; //LED4/D5 red LED
+int loopLED= 6; //LED5/D6
 int printLED = 7; //D7
 
 int focusOUT = 8; //D8
-int shutterOUT = 9;	//LED1/D9
-//int = 10;	//LED2/D10
+int shutterOUT = 9; //LED1/D9
+//int = 10; //LED2/D10
 int usbOUT = 11; //D11
 //int = 12; //D12
-int debugLED = 13;	//LED0
+int debugLED = 13; //LED0
 //Gnd
 //
 //
 //
 
-int shutterBUT = A0;	//A0
+int shutterBUT = A0; //A0
 //A1
-int printBUT = A2; 	//left push-button/A2
-//int shutterBUT = A3;	//right push-button/A3 not wired -> A0
+int printBUT = A2; //left push-button/A2
+//int shutterBUT = A3; //right push-button/A3 not wired -> A0
 //A4
 //A5
 
