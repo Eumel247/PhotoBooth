@@ -18,27 +18,32 @@ Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
 
 //Rx
 //Tx
-int focusOUT = 2; //D2
-int usbLED = 3;		//LED3/D3
-int shutterOUT = 4; //D4
-//int LED = 5;		//LED4/D5  
-//int LED = 6;		//LED5/D6
-int usbOUT = 7; //D7
+//int = 2; //D2
+int statusLED = 3;		//LED3/D3 blue LED
+//int = 4; //D4
+int warnLED = 5;	//LED4/D5 red LED
+int loopLED= 6;	//LED5/D6
+int printLED = 7; //D7
 
-//D8
-int shutterLED = 9;	//LED1/D9
-int printLED = 10;	//LED2/D10
-//D11
-//D12
-int loopLED = 13;	//LED0
+int focusOUT = 8; //D8
+int shutterOUT = 9;	//LED1/D9
+//int = 10;	//LED2/D10
+int usbOUT = 11; //D11
+//int = 12; //D12
+int debugLED = 13;	//LED0
 //Gnd
 //
 //
 //
 
+int shutterBUT = A0;	//A0
+//A1
+int printBUT = A2; 	//left push-button/A2
+//int shutterBUT = A3;	//right push-button/A3 not wired -> A0
+//A4
+//A5
 
-int shutterBUT = A2; 	//left push-button
-int printBUT = A3;	//right push-button
+
 
 
 void setup(){
@@ -46,10 +51,11 @@ void setup(){
 
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
   pinMode(printBUT, INPUT_PULLUP);
-  pinMode(loopLED, OUTPUT); // initialize the LED pins as output
-  pinMode(shutterLED, OUTPUT);
+  pinMode(debugLED, OUTPUT); // initialize the LED pins as output
   pinMode(printLED, OUTPUT); 
-  pinMode(usbLED, OUTPUT); 
+  pinMode(warnLED, OUTPUT); 
+  pinMode(statusLED, OUTPUT);
+  pinMode(loopLED, OUTPUT);
   pinMode(focusOUT, OUTPUT); // initialize the focus and shutter pins as output
   pinMode(shutterOUT, OUTPUT);
   pinMode(usbOUT, OUTPUT); // initialize the output pin which goes to the relay (USB on - off)
@@ -175,7 +181,6 @@ void loop(){
   int printVal = digitalRead(printBUT);
 
   //print out the values of the pushbuttons  
-
 
 
   // Keep in mind the pullup means the pushbutton's
