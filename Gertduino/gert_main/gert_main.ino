@@ -12,9 +12,7 @@ Adafruit_BicolorMatrix matrix = Adafruit_BicolorMatrix();
  20K-ohm resistor is pulled to 5V. This configuration causes the input to
  read HIGH when the switch is open, and LOW when it is closed.
  view http://www.arduino.cc/en/Tutorial/InputPullupSerial
- 
- 
- */
+*/
 
 //Rx
 //Tx
@@ -45,10 +43,14 @@ int shutterBUT = A3; //right push-button/A3 not wired -> A0
 
 
 
+int incomingByte = 0;   // for incoming serial data
+
+/////////////////////////////////////////////////////////////////////////////////
 
 void setup(){
-  Serial.begin(9600); //start serial connection
-
+  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
+  
+  
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
   pinMode(printBUT, INPUT_PULLUP);
   pinMode(debugLED, OUTPUT); // initialize the LED pins as output
@@ -176,6 +178,16 @@ static const uint8_t PROGMEM
     B00111100 };
 
 void loop(){
+
+ // serial communication: send data only when you receive data:
+  if (Serial.available() > 0) {
+   // read the incoming byte:
+   incomingByte = Serial.read();
+   // say what you got:
+   Serial.print("I received: ");
+   Serial.println(incomingByte, DEC);
+  }
+
   digitalWrite(loopLED, HIGH); // LED indicates running loop
   
   int shutterVal = digitalRead(shutterBUT); //read the pushbutton values into variables
