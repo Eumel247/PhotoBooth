@@ -43,7 +43,7 @@ int shutterBUT = A3; //right push-button/A3 not wired -> A0
 
 
 
-int incomingByte = 0;   // for incoming serial data
+String incomingString = 0;   // for incoming serial data
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -179,14 +179,7 @@ static const uint8_t PROGMEM
 
 void loop(){
 
- // serial communication: send data only when you receive data:
-  if (Serial.available() > 0) {
-   // read the incoming byte:
-   incomingByte = Serial.read();
-   // say what you got:
-   Serial.print("I received: ");
-   Serial.println(incomingByte, DEC);
-  }
+  readSerial();
 
   digitalWrite(loopLED, HIGH); // LED indicates running loop
   
@@ -293,6 +286,15 @@ void loop(){
     delay(1000);
   } // else
 } // loop
+
+void readSerial() {
+   if (Serial.available() > 0) {
+   incomingString = Serial.readString(); // read the incoming String 
+   // echo:
+   //Serial.print("I received: ");
+   //Serial.println(incomingString);
+   }  
+}
 
 void takePicture() {
   digitalWrite(shutterOUT, HIGH);

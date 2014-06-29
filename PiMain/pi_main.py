@@ -16,40 +16,41 @@ print "pi_main.py running";
 #        print ser.readline()[:-2]
 
 def pi_getpicture():
-   	"switches USB on and fetches the latest picture"
-	#tell Gertduino to close the USB+ relay
-   	#automount usb
+   	"Fetches the latest picture and tells the Gertduino when it's done."
+	print "pi_getpicture running";
+	time.sleep(5);
+	#automount usb
    	#transfer picture to extHDD
    	#eject /media/KINGSTON;
-   	#tell Gertduino to open the relay
-   	return
+   	ser.write("pi2gert_gotPicture\n"); #disableUSB
+	return
    
    
 def pi_photomerge():
 	"merges the latest picture(s) into a printable <Photostripe>"
-	#
+	print "pi_photomerge running";
 	return
 
    
 def pi_print():
-	"run after pi_photomerge! prints to Canon Selphy 800"
-	print "druck...";
-	#- Pushbutton: Print
+	"print routine"
+	print "pi_print running";
+	time.sleep(3);
+	ser.write("pi2gert_printDone\n"); #ready to print
 	return
 
 
 while True:
     data = ser.read(9999)
     if len(data) > 0:
-        print "Received:", data
-	if "gert2pi_shutter" in data:
-    		print "execute shutter";
-  	elif "gert2pi_print" in data:
-    		print "execute print";
+        print "Received:", data;
+	if "gert2pi_print" in data:
+    		pi_photomerge();
 		pi_print();
     	elif "gert2pi_getPicture" in data:
-    		print "getPicture";
-  	else:	
+    		print "got gert2pi_getPicture";
+		pi_getpicture();		
+	else:	
 		print "command not known";
   	
     #time.sleep(0.5);
