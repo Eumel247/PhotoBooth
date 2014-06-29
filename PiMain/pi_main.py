@@ -20,11 +20,13 @@ while True:
     if len(data) > 0:
         print "Received:", data
 	if data=="gert2pi_shutter":
-    		print "execute shutter";
-  	elif data=="case gert2pi_print":
-    		print "execute print";
-    	else:
-		print "command not known";
+    		print "execute shutter"
+  	elif data=="gert2pi_print":
+    		print "execute print"
+    	elif data=="gert2pi_getPicture":
+    		print "getPicture"
+  	else:
+		print "command not known"
   	
     #time.sleep(0.5)
 
