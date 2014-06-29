@@ -15,24 +15,6 @@ print "pi_main.py running";
 #        ser.write(str(led))
 #        print ser.readline()[:-2]
 
-while True:
-    data = ser.read(9999)
-    if len(data) > 0:
-        print "Received:", data
-	if "gert2pi_shutter" in data:
-    		print "execute shutter";
-  	elif "gert2pi_print" in data:
-    		print "execute print";
-		pi_print();
-    	elif "gert2pi_getPicture" in data:
-    		print "getPicture";
-  	else:	
-		print "command not known";
-  	
-    #time.sleep(0.5)
-
-
-		
 def pi_getpicture():
    	"switches USB on and fetches the latest picture"
 	#tell Gertduino to close the USB+ relay
@@ -54,3 +36,20 @@ def pi_print():
 	print "druck...";
 	#- Pushbutton: Print
 	return
+
+
+while True:
+    data = ser.read(9999)
+    if len(data) > 0:
+        print "Received:", data
+	if "gert2pi_shutter" in data:
+    		print "execute shutter";
+  	elif "gert2pi_print" in data:
+    		print "execute print";
+		pi_print();
+    	elif "gert2pi_getPicture" in data:
+    		print "getPicture";
+  	else:	
+		print "command not known";
+  	
+    #time.sleep(0.5);
