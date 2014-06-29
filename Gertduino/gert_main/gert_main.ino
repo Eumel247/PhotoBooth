@@ -36,10 +36,10 @@ int debugLED = 13; //LED0
 //
 //
 
-int shutterBUT = A0; //A0
+//int shutterBUT = A0; //A0
 //A1
 int printBUT = A2; //left push-button/A2
-//int shutterBUT = A3; //right push-button/A3 not wired -> A0
+int shutterBUT = A3; //right push-button/A3 not wired -> A0
 //A4
 //A5
 
@@ -62,6 +62,7 @@ void setup(){
   
 
   matrix.begin(0x70);  // pass in the LED-8x8 address
+  matrix.setRotation(1);  // 1: pins bottomside
 }
 
 static const uint8_t PROGMEM
@@ -188,10 +189,10 @@ void loop(){
   // and LOW when it's pressed. Turn on shutterLED when the
   // button's pressed, and off when it's not:
   if (shutterVal == HIGH) {
-    digitalWrite(shutterLED, LOW);
+    digitalWrite(statusLED, LOW);
   }
   else {
-    digitalWrite(shutterLED, HIGH);
+    digitalWrite(statusLED, HIGH);
     Serial.println("gert2pi_shutter");
     
     matrix.clear();
@@ -288,13 +289,13 @@ void takePicture() {
 } // takePicture
 
 void getPicture() {
-  digitalWrite(usbLED, HIGH); 
+  digitalWrite(statusLED, HIGH); 
   // 8x8 Display?
   digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
   Serial.println("gert2pi_getPicture"); // tell RPi to get the picture
-  delay(10000); // test
+  delay(60000); // test
   // wait for RPi to disconnect USB 
   digitalWrite(usbOUT, LOW); // USB off
-  digitalWrite(usbLED, LOW); 
+  digitalWrite(statusLED, LOW); 
 } // getPicture
 
