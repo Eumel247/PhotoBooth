@@ -3,8 +3,8 @@ import serial #serial communication on?
 import time
 import subprocess
 
-dslr = /media/KINGSTON
-hdd = /media/TREKSTOR/photobooth/raw
+dslr = "/media/KINGSTON"
+hdd = "/media/TREKSTOR/photobooth/raw"
 
 # strings
 gert2pi = None
@@ -31,17 +31,22 @@ print "pi_main.py running";
 #        print ser.readline()[:-2]
 
 
-def check_serial()
+def check_serial():
 	"checks serial port for incoming communication"
+	global waiting_for_echo
+	global waiting_for_confirmation
 	data = ser.read(100) #max size (bit) of string
-    if len(data) > 0:
-        print "Received:", data
-		if 	waiting_for_echo = True: # pi2gert
+    	print "len(data):" #debug
+	print len(data) #debug
+	print (len(data) > 1) #debug
+	if len(data) > 1:
+        	print "Received:", data
+		if waiting_for_echo: # pi2gert
 			waiting_for_echo = False
 			check_echo(data)
-		elif waiting_for_confirmation = True: # gert2pi
+		elif waiting_for_confirmation: # gert2pi
 			waiting_for_confirmation = False 
-			if "confirmed" in data
+			if "confirmed" in data:
 				interpret_gert2pi(gert2pi) # global gert2pi: no need to define as global for reading	
 			else: 
 				print "Not confirmed! answer is:", data
@@ -63,11 +68,11 @@ def pi2gert(str):
 
 def check_echo(echo):
 	"check if Gertduino got the command right"
-	if send_counter = 10:
+	if send_counter == 10:
 		send_counter = 0
 		print "check_echo timeout, aborting communication!"
 		return
-	if echo = pi2gert:
+	if echo == pi2gert:
 		print "Correct echo:", echo
 		ser.write("confirmed\n")
 		send_counter = 0
@@ -80,19 +85,20 @@ def check_echo(echo):
 	return		
 	
 #################### communication gert2pi ####################
-def echo_gert2pi(data)
+def echo_gert2pi(data):
+	#print data #debug
 	print "Echo: %s" % data
 	waiting_for_confirmation = True
 	ser.write("%s\n") % data
 	return
 	
-def interpret_gert2pi(data)
+def interpret_gert2pi(data):
 	"interprets the command from RPi"
 	if "gert2pi_print" in data:
-    	pi_photomerge()
+    		pi_photomerge()
 		pi_print()
 	elif "gert2pi_getPicture" in data:
-    	pi_getpicture()	
+    		pi_getpicture()	
 	else:	
 		print "command not known"
 	return
@@ -106,13 +112,13 @@ def pi_getpicture():
    	#transfer picture to extHDD
 	subprocess.call(["rsync", "-a", "$dslr", "$hdd"])
    	#eject /media/KINGSTON
-	sudo unmount /media/KINGSTON
+	subprocess.call(["sudo", "umount", "/media/KINGSTON"])
    	pi2gert("pi2gert_gotPicture\n") #disableUSB
 	return
    
    
 def pi_photomerge():
-	"merges the latest picture(s) into a printable <Photostripe>"
+	"merges the latest picture(s) into a printable Photostripe"
 	print "pi_photomerge running"
 	return
 
@@ -129,10 +135,4 @@ def pi_print():
 
 #################### loop ####################
 while True:
-
 	check_serial()
-	
-
-	
-  	
-    #time.sleep(0.5)
