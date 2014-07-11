@@ -203,11 +203,11 @@ LEDstatus[loopLED] = fast;
 	int delay = 0; // delay for slow mode 1
 	for (i = 0; i < 14; i = i + 1) {
 		Serial.println(LEDstatus[i]);
-		if (LEDstatus[i] = 0) {
+		if (LEDstatus[i] == 0) {
 			digitalWrite(i, LOW);
 		}
-		if (LEDstatus[i] = 1) {
-			if (delay = 1) {
+		if (LEDstatus[i] == 1) {
+			if (delay == 1) {
 				digitalWrite(i, !digitalRead(i));
 				delay = 0;
 			}
@@ -215,10 +215,10 @@ LEDstatus[loopLED] = fast;
 				delay = 1;
 			}
 		}
-		if (LEDstatus[i] = 2) {
+		if (LEDstatus[i] == 2) {
 			digitalWrite(i, !digitalRead(i));
 		}
-		if (LEDstatus[i] = 3) {
+		if (LEDstatus[i] == 3) {
 			digitalWrite(i, HIGH);
 		}
 	}	
