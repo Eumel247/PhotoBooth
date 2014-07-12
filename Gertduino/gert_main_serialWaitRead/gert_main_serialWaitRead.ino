@@ -208,7 +208,7 @@ LEDstatus[loopLED] = fast;
   	int i = 0; // loop counter
 	int delay = 0; // delay for slow mode 1
 	for (i = 0; i < 14; i = i + 1) {
-		Serial.println(LEDstatus[i]);
+		//Serial.println(LEDstatus[i]);
 		if (LEDstatus[i] == 0) {
 			digitalWrite(i, LOW);
 		}
@@ -263,10 +263,8 @@ LEDstatus[loopLED] = fast;
     LEDstatus[debugLED] = on;
     //Serial.println("gert2pi_shutter");
        
-    countdown();
     takePicture(); 
-    
-    
+        
     matrix.clear();
     matrix.writeDisplay();
     
@@ -282,7 +280,7 @@ LEDstatus[loopLED] = fast;
   if (printVal == LOW && !(waiting_for_picture || waiting_for_print)) {
     LEDstatus[printLED] = off;
     waiting_for_print = true;
-    Serial.println("gert2pi_print");
+    gert2pi("gert2pi_print");
     delay(1000);
     
   } // if
@@ -365,7 +363,7 @@ void interpret_pi2gert(String inputString) {
   }
   
   if(inputString == "pi2gert_gotPicture") {
-    Serial.println("Got picture!");
+    gert2pi("Got picture!");
     waiting_for_picture = false;
     inputString = "";
   }
@@ -374,26 +372,20 @@ void interpret_pi2gert(String inputString) {
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-void takePicture() {
-  digitalWrite(shutterOUT, HIGH);
-  delay(2000);
-  digitalWrite(shutterOUT, LOW);
-  delay(1000);
-} // takePicture
-
-/////////////////////////////////////////////////////////////////////////////////
 
 void getPicture() {
-  digitalWrite(statusLED, HIGH); 
+  LEDstatus[statusLED] = fast;
+  
   // 8x8 Display?
   digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
-  Serial.println("gert2pi_getPicture"); // tell RPi to get the picture
+  gert2pi("gert2pi_getPicture"); // tell RPi to get the picture
   delay(1000); // test 
+  LEDstatus[statusLED] = off;
 } // getPicture
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void countdown() {
+void takePicture() {
   matrix.clear();
   matrix.fillRect(0,0, 8,8, LED_RED);
   //matrix.fillRect(2,2, 4,4, LED_GREEN);
@@ -441,7 +433,9 @@ void countdown() {
   matrix.drawBitmap(0, 0, four_bmp, 8, 8, LED_YELLOW);
   matrix.writeDisplay();
   delay(1000); 
-    
+ 
+  digitalWrite(focusOUT, HIGH);
+ 
   matrix.clear();
   matrix.drawBitmap(0, 0, three_bmp, 8, 8, LED_RED);
   matrix.writeDisplay();
@@ -451,11 +445,16 @@ void countdown() {
   matrix.drawBitmap(0, 0, two_bmp, 8, 8, LED_RED);
   matrix.writeDisplay();
   delay(1000); 
-    
+  
+  digitalWrite(shutterOUT, HIGH);  
+  
   matrix.clear();
   matrix.drawBitmap(0, 0, one_bmp, 8, 8, LED_RED);
   matrix.writeDisplay();
   delay(1000); 
+  
+  digitalWrite(focusOUT, LOW);
+  digitalWrite(shutterOUT, LOW);
     
   matrix.clear();
   matrix.drawBitmap(0, 0, smile_bmp, 8, 8, LED_GREEN);
