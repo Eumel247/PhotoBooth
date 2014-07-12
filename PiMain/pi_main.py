@@ -67,7 +67,7 @@ def pi2gert(str):
 	"serial communication between RPi and Gertduino"
 	print "pi2gert: %s" % str
 	waiting_for_echo = True
-	ser.write("%s\n") % str
+	ser.write(str +"r\n")
 	global com_pi2gert
 	com_pi2gert = str
 	return
