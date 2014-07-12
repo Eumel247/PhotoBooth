@@ -56,8 +56,13 @@ Metro serialMetro = Metro(250); // Metro event every 250 ms, triggers serial-rea
 Metro ledMetro = Metro(500); 
 
 String inputString = "";         // a string to hold incoming data
-boolean waitForPrint = false;    // whether the pi_print() function is running
-boolean waitForPicture = false;    // whether the pi_print() function is running
+String com_gert2pi = "";     // storage for gert2pi command
+String com_pi2gert = "";     // storage for pi2gert command
+boolean waiting_for_print = false;    // whether the pi_print() function is running
+boolean waiting_for_picture = false;    // whether the pi_print() function is running
+boolean waiting_for_echo = false; // waits for echo
+boolean waiting_for_confirmation = false; // waits for confirmation off the echoed command
+int send_counter = 0; //triggers an check_echo malfunction
 
 static const uint8_t PROGMEM
   smile_bmp[] =
@@ -224,7 +229,7 @@ LEDstatus[loopLED] = fast;
 	}	
   }
   
-  //digitalWrite(loopLED, HIGH); // LED indicates running loop
+  //digitalWrite(loopLED, HIGH); //LED indicates running loop
   
   int shutterVal = digitalRead(shutterBUT); //read the pushbutton values into variables
   int printVal = digitalRead(printBUT);
@@ -237,66 +242,51 @@ LEDstatus[loopLED] = fast;
   // and LOW when it's pressed. Turn on shutterLED when the
   // button's pressed, and off when it's not:
   
-  if(Serial.available() > 0) {
-    inputString = Serial.readStringUntil('\n');
-    //x = Serial.parseInt();
-  }
-    
-  if(inputString == "pi2gert_printDone") {
-    Serial.println("Print done!");
-    waitForPrint = false;
-    inputString = "";
-  }
-  
-  if(inputString == "pi2gert_gotPicture") {
-    Serial.println("Got picture!");
-    waitForPicture = false;
-    inputString = "";
-  }
-    
-  if (waitForPrint==false) {
-    digitalWrite(printLED, HIGH);//ready to print
+  if (waiting_for_print) {
+    LEDstatus[printLED] = off; //ready to print
   }
   else {
-    digitalWrite(printLED, LOW);
+    LEDstatus[printLED] = on;
   }
   
-  if (waitForPicture==false) {
+  if (waiting_for_picture) {
+    LEDstatus[statusLED] = fast;
+  }
+  else {
+    LEDstatus[statusLED] = off;
     digitalWrite(usbOUT, LOW); // USB off
-    digitalWrite(statusLED, LOW);
   }
-  else {
-  }
-  
   
   /////SHUTTER/////
-  if (shutterVal == HIGH && waitForPicture == false) {
-    digitalWrite(statusLED, LOW);
-  }
-  else {
-    digitalWrite(statusLED, HIGH);
+  if (shutterVal == LOW && !waiting_for_picture) {
+    LEDstatus[debugLED] = on;
     //Serial.println("gert2pi_shutter");
        
     countdown();
     takePicture(); 
     
-    delay(1000);
+    
     matrix.clear();
     matrix.writeDisplay();
     
     getPicture();
+    
+  }
+  else {
+    LEDstatus[debugLED] = off;
        
   } // else
   
   /////PRINT/////  
-  if (printVal == HIGH) {
-    digitalWrite(printLED, LOW);
+  if (printVal == LOW && !(waiting_for_picture || waiting_for_print)) {
+    LEDstatus[printLED] = on;
+    waiting_for_print = true;
+    Serial.println("gert2pi_print");
+    delay(1000);
+    
   } // if
   else {
-    digitalWrite(printLED, HIGH);
-    waitForPrint = true;
-    Serial.println("gert2pi_print");
-    delay(1000);    
+    digitalWrite(printLED, LOW);   
     
         
   } // else
@@ -305,10 +295,89 @@ LEDstatus[loopLED] = fast;
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
+//serial communication//////////////////////////////////////////////////////////
+void check_serial() {
+
+  if(Serial.available() > 0) {
+    inputString = Serial.readStringUntil('\n');
+    //x = Serial.parseInt();
+  }
+  if(waiting_for_echo) {
+    waiting_for_echo = false;
+    check_echo(inputString);
+    return;
+  }
+  if(waiting_for_confirmation) {
+    if(inputString == "confirmed") {
+      waiting_for_confirmation = false;
+      interpret_pi2gert(inputString);
+    }
+    //else {
+      //Serial.println("gert didn't receive confirmation from pi! (" + inputString + ")")
+      //echo_pi2gert(inputString); // if pi's check_echo() trys to resend command
+    //}
+    
+    return;
+  }
+  //Else
+  com_pi2gert = inputString;
+  echo_pi2gert(inputString);  
+  
+}
+
+//communication gert2pi//////////////////////////////////////////////////////////
+void gert2pi(String str) {
+  waiting_for_echo = true;
+  Serial.println(str);
+  com_gert2pi = str; 
+}
+
+void check_echo(String echo) {
+  if(send_counter == 10) {
+    send_counter = 0;
+    LEDstatus[warnLED] = fast;
+    return;
+  }
+  if(echo == com_gert2pi) {
+    LEDstatus[warnLED] = off;
+    Serial.println("confirmed");
+    send_counter = 0;
+  }
+  else {
+    send_counter += 1;
+    LEDstatus[warnLED] = slow;
+    gert2pi(com_gert2pi); //send again
+  }
+}
+
+//communication pi2gert//////////////////////////////////////////////////////////
+void echo_pi2gert(String inputString) {
+  waiting_for_confirmation = true;
+  Serial.println(inputString);
+}
+
+void interpret_pi2gert(String inputString) {
+  if(inputString == "pi2gert_printDone") {
+    //Serial.println("Print done!");
+    waiting_for_print = false;
+    inputString = "";
+  }
+  
+  if(inputString == "pi2gert_gotPicture") {
+    Serial.println("Got picture!");
+    waiting_for_picture = false;
+    inputString = "";
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
 void takePicture() {
   digitalWrite(shutterOUT, HIGH);
   delay(2000);
   digitalWrite(shutterOUT, LOW);
+  delay(1000);
 } // takePicture
 
 /////////////////////////////////////////////////////////////////////////////////

@@ -7,14 +7,16 @@ dslr = "/media/KINGSTON"
 hdd = "/media/TREKSTOR/photobooth/raw"
 
 # strings
-gert2pi = None
-pi2gert = None
+com_gert2pi = None
+com_pi2gert = None
 
 # status booleans (flags)
 waiting_for_echo = False
 waiting_for_confirmation = False
 #serial = False
 
+# integers
+send_counter = 0
 
 ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 print "pi_main.py running";
@@ -44,16 +46,20 @@ def check_serial():
 		if waiting_for_echo: # pi2gert
 			waiting_for_echo = False
 			check_echo(data)
-		elif waiting_for_confirmation: # gert2pi
-			waiting_for_confirmation = False 
+			return
+		if waiting_for_confirmation: # gert2pi
 			if "confirmed" in data:
-				interpret_gert2pi(gert2pi) # global gert2pi: no need to define as global for reading	
-			else: 
-				print "Not confirmed! answer is:", data
-		else: # no flags set
-			global gert2pi
-			gert2pi = data
-			echo_gert2pi(data)
+				waiting_for_confirmation = False
+				interpret_gert2pi(com_gert2pi) # global com_gert2pi: no need to define as global for reading	
+				return
+			#else: 
+			#	print "Not confirmed! answer is:", data
+			#	echo_gert2pi
+			
+		#Else: no flags set
+		global com_gert2pi
+		com_gert2pi = data
+		echo_gert2pi(data)
 	return
 
 #################### communication pi2gert ####################	
@@ -62,25 +68,26 @@ def pi2gert(str):
 	print "pi2gert: %s" % str
 	waiting_for_echo = True
 	ser.write("%s\n") % str
-	global pi2gert
-	pi2gert = str
+	global com_pi2gert
+	com_pi2gert = str
 	return
 
 def check_echo(echo):
 	"check if Gertduino got the command right"
+	global send_counter
 	if send_counter == 10:
 		send_counter = 0
 		print "check_echo timeout, aborting communication!"
 		return
-	if echo == pi2gert:
+	if echo == com_pi2gert:
 		print "Correct echo:", echo
 		ser.write("confirmed\n")
 		send_counter = 0
 	else:
 		send_counter += 1
 		print "Wrong echo:", echo
-		print "Resend:", pi2gert
-		pi2gert(pi2gert) # send again
+		print "Resend:", com_pi2gert
+		pi2gert(com_pi2gert) # send again
 	time.sleep(0.5)
 	return		
 	
