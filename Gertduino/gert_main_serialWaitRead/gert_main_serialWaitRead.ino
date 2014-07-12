@@ -35,10 +35,10 @@ int debugLED = 13; //LED0
 //
 //
 
-//int shutterBUT = A0; //A0
+int shutterBUT = A0; //A0
 //A1
 int printBUT = A2; //left push-button/A2
-int shutterBUT = A3; //right push-button/A3 not wired -> A0
+int testBUT = A3; //right push-button/A3 not wired -> A0
 //A4
 //A5
 
@@ -182,6 +182,7 @@ void setup(){
   inputString.reserve(200); // reserve 200 bytes for the inputString
   
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
+  pinMode(testBUT, INPUT_PULLUP); // internal, right push-button, test-purposes
   pinMode(printBUT, INPUT_PULLUP);
   pinMode(debugLED, OUTPUT); // initialize the LED pins as output
   pinMode(printLED, OUTPUT); 
@@ -231,7 +232,7 @@ LEDstatus[loopLED] = fast;
   
   //digitalWrite(loopLED, HIGH); //LED indicates running loop
   
-  int shutterVal = digitalRead(shutterBUT); //read the pushbutton values into variables
+  int shutterVal = digitalRead(shutterBUT); //read the push-button values into variables
   int printVal = digitalRead(printBUT);
 
   //print out the values of the pushbuttons  
@@ -279,14 +280,14 @@ LEDstatus[loopLED] = fast;
   
   /////PRINT/////  
   if (printVal == LOW && !(waiting_for_picture || waiting_for_print)) {
-    LEDstatus[printLED] = on;
+    LEDstatus[printLED] = off;
     waiting_for_print = true;
     Serial.println("gert2pi_print");
     delay(1000);
     
   } // if
   else {
-    digitalWrite(printLED, LOW);   
+    LEDstatus[printLED] = on; 
     
         
   } // else
