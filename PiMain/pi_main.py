@@ -37,7 +37,7 @@ def check_serial():
 	"checks serial port for incoming communication"
 	global waiting_for_echo
 	global waiting_for_confirmation
-	data = ser.read(100) #max size (bit) of string
+	data = ser.read(9999) #max size (bit) of string
     	print "len(data):" #debug
 	print len(data) #debug
 	print (len(data) > 1) #debug
@@ -96,7 +96,9 @@ def echo_gert2pi(data):
 	#print data #debug
 	print "Echo: %s" % data
 	waiting_for_confirmation = True
-	ser.write("%s\n") % data
+	print type(data)
+	print type("\n")
+	ser.write(data +"r\n") #% data
 	return
 	
 def interpret_gert2pi(data):
