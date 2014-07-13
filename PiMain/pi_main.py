@@ -7,8 +7,8 @@ dslr = "/media/KINGSTON"
 hdd = "/media/TREKSTOR/photobooth/raw"
 
 # strings
-com_gert2pi = None
-com_pi2gert = None
+com_gert2pi = ""
+com_pi2gert = ""
 
 # status booleans (flags)
 waiting_for_echo = False
@@ -37,25 +37,28 @@ def check_serial():
 	"checks serial port for incoming communication"
 	global waiting_for_echo
 	global waiting_for_confirmation
+	global com_gert2pi
 	data = ser.read(9999) #max size (bit) of string
-    	print "len(data):" #debug
-	print len(data) #debug
-	print (len(data) > 1) #debug
+    	#print "len(data):" #debug
+	#print len(data) #debug
+	#print data #debug
 	if len(data) > 1:
         	print "Received:", data
-		if waiting_for_echo: # pi2gert
-			waiting_for_echo = False
+		if waiting_for_echo == True: # pi2gert
+			#waiting_for_echo = False
 			check_echo(data)
 			return
-		if waiting_for_confirmation: # gert2pi
+		if waiting_for_confirmation == True: # gert2pi
 			if "confirmed" in data:
 				waiting_for_confirmation = False
-				interpret_gert2pi(com_gert2pi) # global com_gert2pi: no need to define as global for reading	
+				interpret_gert2pi(com_gert2pi) 	
 				return
 			#else: 
 			#	print "Not confirmed! answer is:", data
 			#	echo_gert2pi
-			
+		if "debug" in data:
+			print "Debug:" + data
+			return	
 		#Else: no flags set
 		global com_gert2pi
 		com_gert2pi = data
@@ -94,15 +97,15 @@ def check_echo(echo):
 #################### communication gert2pi ####################
 def echo_gert2pi(data):
 	#print data #debug
-	print "Echo: %s" % data
+	global waiting_for_confirmation
+	print "Echo: " + data
 	waiting_for_confirmation = True
-	print type(data)
-	print type("\n")
-	ser.write(data +"r\n") #% data
+	ser.write(data +"\n") #% data
 	return
 	
 def interpret_gert2pi(data):
 	"interprets the command from RPi"
+	print "interpret running"
 	if "gert2pi_print" in data:
     		pi_photomerge()
 		pi_print()
@@ -145,3 +148,4 @@ def pi_print():
 #################### loop ####################
 while True:
 	check_serial()
+#	print waiting_for_confirmation

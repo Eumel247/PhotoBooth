@@ -47,8 +47,8 @@ int slow = 1;
 int fast = 2;
 int on = 3;
 
-//					0	1	2	3	4	5	6	7	8	9	10	11	12	13
-//								Status	WarnLoopPrint					Debug
+//					        0	  1	  2	  3	  4	  5	  6	  7	  8	  9	  10  11	12	13
+//								              Status	WarnLoopPrint					          Debug
 int LEDstatus[] = { 0,	0,	0,	off,0,	off,off,off,0,	0,	0,	0,	0,	off};
   
 
@@ -203,6 +203,7 @@ void setup(){
 void loop(){  
 
 LEDstatus[loopLED] = fast;
+check_serial();
   
   if (ledMetro.check() == 1) { // check if the metro has passed its interval .
   	int i = 0; // loop counter
@@ -281,14 +282,17 @@ LEDstatus[loopLED] = fast;
     LEDstatus[printLED] = off;
     waiting_for_print = true;
     gert2pi("gert2pi_print");
-    delay(1000);
+    
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, three_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();
+    //delay(1000);
     
   } // if
-  else {
+  if (!waiting_for_print) {
     LEDstatus[printLED] = on; 
-    
-        
-  } // else
+  } // if
 } // loop
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -301,10 +305,21 @@ void check_serial() {
     inputString = Serial.readStringUntil('\n');
     //x = Serial.parseInt();
   }
-  if(waiting_for_echo) {
+  if(waiting_for_echo && (inputString.length() > 0)) {
+    
+    //Debug
+    //matrix.clear();
+    //matrix.drawBitmap(0, 0, two_bmp, 8, 8, LED_RED);
+    //matrix.writeDisplay();
+    //Serial.println("debug_echo");
+    
     waiting_for_echo = false;
     check_echo(inputString);
+    LEDstatus[statusLED] = on; //blau, debug
     return;
+  }
+  else{
+    LEDstatus[statusLED] = off; //blau, debug
   }
   if(waiting_for_confirmation) {
     if(inputString == "confirmed") {
@@ -329,6 +344,12 @@ void gert2pi(String str) {
   waiting_for_echo = true;
   Serial.println(str);
   com_gert2pi = str; 
+  
+  //Debug
+  //matrix.clear();
+  //matrix.drawBitmap(0, 0, one_bmp, 8, 8, LED_RED);
+  //matrix.writeDisplay();
+    
 }
 
 void check_echo(String echo) {
@@ -337,12 +358,32 @@ void check_echo(String echo) {
     LEDstatus[warnLED] = fast;
     return;
   }
-  if(echo == com_gert2pi) {
+  
+  //Serial.println("debug_check_echo running");
+  //Serial.println(echo);
+  //Serial.println(com_gert2pi);
+  echo.trim();
+  com_gert2pi.trim();
+  //Serial.println(com_gert2pi.startsWith(echo)); 
+  //Serial.println(com_gert2pi == echo); 
+  
+  if(com_gert2pi == echo) {
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, three_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();
+  
     LEDstatus[warnLED] = off;
     Serial.println("confirmed");
     send_counter = 0;
   }
   else {
+  
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();
+    
     send_counter += 1;
     LEDstatus[warnLED] = slow;
     gert2pi(com_gert2pi); //send again
@@ -374,13 +415,13 @@ void interpret_pi2gert(String inputString) {
 
 
 void getPicture() {
-  LEDstatus[statusLED] = fast;
+  //LEDstatus[statusLED] = fast;
   
   // 8x8 Display?
-  digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
+  //digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
   gert2pi("gert2pi_getPicture"); // tell RPi to get the picture
-  delay(1000); // test 
-  LEDstatus[statusLED] = off;
+  //delay(1000); // test 
+  //LEDstatus[statusLED] = off;
 } // getPicture
 
 /////////////////////////////////////////////////////////////////////////////////
