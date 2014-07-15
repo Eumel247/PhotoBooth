@@ -26,7 +26,7 @@ int printLED = 7; //D7
 
 int focusOUT = 8; //D8
 int shutterOUT = 9; //LED1/D9
-//int = 10; //LED2/D10
+int usbLED = 10; //LED2/D10
 int usbOUT = 11; //D11
 //int = 12; //D12
 int debugLED = 13; //LED0
@@ -38,7 +38,7 @@ int debugLED = 13; //LED0
 int shutterBUT = A0; //A0
 //A1
 int printBUT = A2; //left push-button/A2
-int testBUT = A3; //right push-button/A3 not wired -> A0
+int usbBUT = A3; //right push-button/A3 not wired -> A0
 //A4
 //A5
 
@@ -54,6 +54,7 @@ int LEDstatus[] = { 0,	0,	0,	off,0,	off,off,off,0,	0,	0,	0,	0,	off};
 
 Metro serialMetro = Metro(250); // Metro event every 250 ms, triggers serial-read
 Metro ledMetro = Metro(500); 
+Metro resetMetro = Metro(1000);
 
 String inputString = "";         // a string to hold incoming data
 String com_gert2pi = "";     // storage for gert2pi command
@@ -63,6 +64,7 @@ boolean waiting_for_picture = false;    // whether the pi_print() function is ru
 boolean waiting_for_echo = false; // waits for echo
 boolean waiting_for_confirmation = false; // waits for confirmation off the echoed command
 int send_counter = 0; //triggers an check_echo malfunction
+int watchdog = 0; // resets the status after 10 sec
 
 static const uint8_t PROGMEM
   smile_bmp[] =
@@ -182,13 +184,14 @@ void setup(){
   inputString.reserve(200); // reserve 200 bytes for the inputString
   
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
-  pinMode(testBUT, INPUT_PULLUP); // internal, right push-button, test-purposes
+  //pinMode(testBUT, INPUT_PULLUP); // internal, right push-button, test-purposes
   pinMode(printBUT, INPUT_PULLUP);
   pinMode(debugLED, OUTPUT); // initialize the LED pins as output
   pinMode(printLED, OUTPUT); 
   pinMode(warnLED, OUTPUT); 
   pinMode(statusLED, OUTPUT);
   pinMode(loopLED, OUTPUT);
+  pinMode(usbLED, OUTPUT); // internal, right push-button
   pinMode(focusOUT, OUTPUT); // initialize the focus and shutter pins as output
   pinMode(shutterOUT, OUTPUT);
   pinMode(usbOUT, OUTPUT); // initialize the output pin which goes to the relay (USB on - off)
@@ -202,8 +205,30 @@ void setup(){
 
 void loop(){  
 
-LEDstatus[loopLED] = fast;
-check_serial();
+  LEDstatus[loopLED] = slow;
+  
+  //if (serialMetro.check() == 1) {
+    check_serial();
+  //}
+  
+  if (resetMetro.check() == 1) {
+    if (waiting_for_picture || waiting_for_echo || waiting_for_confirmation) { //12 sec
+      watchdog += 10;
+    }
+    else if (waiting_for_print) { //120 sec
+      watchdog += 1;
+    }
+    else {
+      watchdog = 0;
+    }
+    if (watchdog == 120) {
+      waiting_for_picture = false;
+      waiting_for_print = false;
+      waiting_for_echo = false;
+      waiting_for_confirmation = false;
+      watchdog = 0;
+    }
+  }
   
   if (ledMetro.check() == 1) { // check if the metro has passed its interval .
   	int i = 0; // loop counter
@@ -235,6 +260,7 @@ check_serial();
   
   int shutterVal = digitalRead(shutterBUT); //read the push-button values into variables
   int printVal = digitalRead(printBUT);
+  int usbVal = digitalRead(usbBUT);
 
   //print out the values of the pushbuttons  
 
@@ -253,10 +279,28 @@ check_serial();
   
   if (waiting_for_picture) {
     LEDstatus[statusLED] = fast;
-  }
+  }  
   else {
     LEDstatus[statusLED] = off;
     digitalWrite(usbOUT, LOW); // USB off
+  }
+  
+  if (digitalRead(usbOUT) == LOW) { //USB status
+    LEDstatus[usbLED] = off;
+  }
+  else {
+    LEDstatus[usbLED] = fast;
+  }
+  
+  if (usbVal == LOW && !waiting_for_picture) { //USB switch
+    if (digitalRead(usbOUT) == LOW) {
+      digitalWrite(usbOUT, HIGH);
+      LEDstatus[usbLED] = slow;
+    }
+    else {
+      digitalWrite(usbOUT, LOW);
+      LEDstatus[usbLED] = off;
+    }
   }
   
   /////SHUTTER/////
@@ -290,9 +334,7 @@ check_serial();
     //delay(1000);
     
   } // if
-  if (!waiting_for_print) {
-    LEDstatus[printLED] = on; 
-  } // if
+
 } // loop
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -418,10 +460,11 @@ void getPicture() {
   //LEDstatus[statusLED] = fast;
   
   // 8x8 Display?
-  //digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
+  digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
   gert2pi("gert2pi_getPicture"); // tell RPi to get the picture
   //delay(1000); // test 
   //LEDstatus[statusLED] = off;
+  waiting_for_picture = true;
 } // getPicture
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -449,12 +492,16 @@ void takePicture() {
   matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_GREEN);
   matrix.writeDisplay();
   delay(1000); 
-    
+  
+  digitalWrite(focusOUT, HIGH); //camera wakeup ->
+  
   matrix.clear();
   matrix.drawBitmap(0, 0, eight_bmp, 8, 8, LED_GREEN);
   matrix.writeDisplay();
   delay(1000); 
-    
+  
+  digitalWrite(focusOUT, LOW); //-> camera wakeup
+  
   matrix.clear();
   matrix.drawBitmap(0, 0, seven_bmp, 8, 8, LED_GREEN);
   matrix.writeDisplay();
