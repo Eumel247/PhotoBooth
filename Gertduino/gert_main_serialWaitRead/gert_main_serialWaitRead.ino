@@ -380,15 +380,22 @@ void check_serial() {
   }
 */ 
 //else
-  //if(waiting_for_picture) {
-    //Debug
+  if(waiting_for_picture) {
     matrix.clear();
-    matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
-    matrix.writeDisplay();     
-    
+    matrix.fillRect(0,0, 8,8, LED_RED);
+    matrix.writeDisplay(); 
+    delay(1000);    
+  }
+  else {
+    matrix.clear();
+    matrix.fillRect(0,0, 8,8, LED_GREEN);
+    matrix.writeDisplay(); 
+    delay(1000);
+  } 
+  
   
     interpret_pi2gert(inputString);
-  //}  
+  
     
 /*handshake pi2gert    
     com_pi2gert = inputString;
@@ -443,9 +450,9 @@ void check_echo(String echo) {
   else {
   
     //Debug
-    matrix.clear();
-    matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
-    matrix.writeDisplay();
+//    matrix.clear();
+//    matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
+//    matrix.writeDisplay();
     
     send_counter += 1;
     LEDstatus[warnLED] = slow;
@@ -469,20 +476,34 @@ void echo_pi2gert(String inputString) {
 */
 
 void interpret_pi2gert(String inputString) {
+  
+  
+  //Serial.println(inputString == "pi2gert_gotPicture");
+  inputString.trim();
+  //Serial.println(inputString);
+  //Serial.println(inputString == "pi2gert_gotPicture");
+  
+//  Debug
+//  matrix.clear();
+//  matrix.drawBitmap(0, 0, two_bmp, 8, 8, LED_RED);
+//  matrix.writeDisplay();
+  
+  
   if(inputString == "pi2gert_printDone") {
     //Serial.println("Print done!");
     waiting_for_print = false;
     
-    //Debug
-    matrix.clear();
-    matrix.drawBitmap(0, 0, eight_bmp, 8, 8, LED_RED);
-    matrix.writeDisplay();
+   
     
     inputString = "";
   }
   
   if(inputString == "pi2gert_gotPicture") {
-    //gert2pi("Got picture!");
+    matrix.clear();
+    matrix.fillRect(0,0, 8,8, LED_YELLOW);
+    matrix.writeDisplay(); 
+    delay(1000);
+    //Serial.println("Got picture!");
     waiting_for_picture = false;
     inputString = "";
   }
@@ -499,7 +520,7 @@ void getPicture() {
   waiting_for_picture = true;
   // 8x8 Display?
   digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
-  delay(10000);
+  delay(1000);
   gert2pi("gert2pi_getPicture"); // tell RPi to get the picture
   //delay(1000); // test 
   //LEDstatus[statusLED] = off;
@@ -586,4 +607,5 @@ void takePicture() {
   matrix.clear();
   matrix.drawBitmap(0, 0, smile_bmp, 8, 8, LED_GREEN);
   matrix.writeDisplay();
+  delay(1000);
 }
