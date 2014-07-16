@@ -211,24 +211,24 @@ void loop(){
     check_serial();
   //}
   
-  if (resetMetro.check() == 1) {
-    if (waiting_for_picture || waiting_for_echo || waiting_for_confirmation) { //12 sec
-      watchdog += 10;
-    }
-    else if (waiting_for_print) { //120 sec
-      watchdog += 1;
-    }
-    else {
-      watchdog = 0;
-    }
-    if (watchdog == 120) {
-      waiting_for_picture = false;
-      waiting_for_print = false;
-      waiting_for_echo = false;
-      waiting_for_confirmation = false;
-      watchdog = 0;
-    }
-  }
+//  if (resetMetro.check() == 1) {
+//    if (waiting_for_picture || waiting_for_echo || waiting_for_confirmation) { //12 sec
+//      watchdog += 10;
+//    }
+//    else if (waiting_for_print) { //120 sec
+//      watchdog += 1;
+//    }
+//    else {
+//      watchdog = 0;
+//    }
+//    if (watchdog == 120) {
+//      waiting_for_picture = false;
+//      waiting_for_print = false;
+//      waiting_for_echo = false;
+//      waiting_for_confirmation = false;
+//      watchdog = 0;
+//    }
+//  }
   
   if (ledMetro.check() == 1) { // check if the metro has passed its interval .
   	int i = 0; // loop counter
@@ -278,10 +278,16 @@ void loop(){
   }
   
   if (waiting_for_picture) {
-    LEDstatus[statusLED] = fast;
+    //Debug
+//    matrix.clear();
+//    matrix.drawBitmap(0, 0, four_bmp, 8, 8, LED_RED);
+//    matrix.writeDisplay();
+    digitalWrite(usbOUT, HIGH); // USB on
   }  
   else {
-    LEDstatus[statusLED] = off;
+//    matrix.clear();
+//    matrix.drawBitmap(0, 0, five_bmp, 8, 8, LED_RED);
+//    matrix.writeDisplay();
     digitalWrite(usbOUT, LOW); // USB off
   }
   
@@ -292,16 +298,16 @@ void loop(){
     LEDstatus[usbLED] = fast;
   }
   
-  if (usbVal == LOW && !waiting_for_picture) { //USB switch
-    if (digitalRead(usbOUT) == LOW) {
-      digitalWrite(usbOUT, HIGH);
-      LEDstatus[usbLED] = slow;
-    }
-    else {
-      digitalWrite(usbOUT, LOW);
-      LEDstatus[usbLED] = off;
-    }
-  }
+//  if (usbVal == LOW && !waiting_for_picture) { //USB switch
+//    if (digitalRead(usbOUT) == LOW) {
+//      digitalWrite(usbOUT, HIGH);
+//      LEDstatus[usbLED] = slow;
+//    }
+//    else {
+//      digitalWrite(usbOUT, LOW);
+//      LEDstatus[usbLED] = off;
+//    }
+//  }
   
   /////SHUTTER/////
   if (shutterVal == LOW && !waiting_for_picture) {
@@ -346,7 +352,7 @@ void check_serial() {
   if(Serial.available() > 0) {
     inputString = Serial.readStringUntil('\n');
     //x = Serial.parseInt();
-  }
+  
   if(waiting_for_echo && (inputString.length() > 0)) {
     
     //Debug
@@ -360,7 +366,7 @@ void check_serial() {
     LEDstatus[statusLED] = on; //blau, debug
     return;
   }
-  else{
+  else {
     LEDstatus[statusLED] = off; //blau, debug
   }
   if(waiting_for_confirmation) {
@@ -375,9 +381,24 @@ void check_serial() {
     
     return;
   }
-  //Else
-  com_pi2gert = inputString;
-  echo_pi2gert(inputString);  
+  
+  if(waiting_for_picture) {
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();     
+  }
+  else {
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, eight_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();
+  
+    com_pi2gert = inputString;
+    echo_pi2gert(inputString);
+  }
+    
+  }
   
 }
 
@@ -404,15 +425,18 @@ void check_echo(String echo) {
   //Serial.println("debug_check_echo running");
   //Serial.println(echo);
   //Serial.println(com_gert2pi);
+  //Serial.println(com_gert2pi == echo);
   echo.trim();
   com_gert2pi.trim();
+  //Serial.println(echo);
+  //Serial.println(com_gert2pi);
   //Serial.println(com_gert2pi.startsWith(echo)); 
   //Serial.println(com_gert2pi == echo); 
   
   if(com_gert2pi == echo) {
     //Debug
     matrix.clear();
-    matrix.drawBitmap(0, 0, three_bmp, 8, 8, LED_RED);
+    matrix.drawBitmap(0, 0, seven_bmp, 8, 8, LED_RED);
     matrix.writeDisplay();
   
     LEDstatus[warnLED] = off;
@@ -434,6 +458,12 @@ void check_echo(String echo) {
 
 //communication pi2gert//////////////////////////////////////////////////////////
 void echo_pi2gert(String inputString) {
+  //debug
+  matrix.clear();
+  matrix.drawBitmap(0, 0, six_bmp, 8, 8, LED_YELLOW);
+  matrix.writeDisplay();
+  delay(1000);
+  
   waiting_for_confirmation = true;
   Serial.println(inputString);
 }
@@ -446,7 +476,7 @@ void interpret_pi2gert(String inputString) {
   }
   
   if(inputString == "pi2gert_gotPicture") {
-    gert2pi("Got picture!");
+    //gert2pi("Got picture!");
     waiting_for_picture = false;
     inputString = "";
   }
@@ -458,13 +488,14 @@ void interpret_pi2gert(String inputString) {
 
 void getPicture() {
   //LEDstatus[statusLED] = fast;
-  
+  waiting_for_picture = true;
   // 8x8 Display?
   digitalWrite(usbOUT, HIGH); // closes the relay -> USB enabled
+  delay(10000);
   gert2pi("gert2pi_getPicture"); // tell RPi to get the picture
   //delay(1000); // test 
   //LEDstatus[statusLED] = off;
-  waiting_for_picture = true;
+  
 } // getPicture
 
 /////////////////////////////////////////////////////////////////////////////////

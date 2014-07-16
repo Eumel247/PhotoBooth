@@ -2,9 +2,7 @@
 import serial #serial communication on?
 import time
 import subprocess
-
-dslr = "/media/KINGSTON"
-hdd = "/media/TREKSTOR/photobooth/raw"
+from PIL import Image, ImageOps
 
 # strings
 com_gert2pi = ""
@@ -21,7 +19,6 @@ send_counter = 0
 ser = serial.Serial('/dev/ttyAMA0', 9600, timeout=1)
 print "pi_main.py running";
 
-
 #while True: #Test with PiGertduinoSerial.ino
 #    inStr = raw_input("Enter an led number between 0 and 5 followed by ENTER ")
 #    try:
@@ -31,7 +28,6 @@ print "pi_main.py running";
 #    if led >= 0 and led <= 5:
 #        ser.write(str(led))
 #        print ser.readline()[:-2]
-
 
 def check_serial():
 	"checks serial port for incoming communication"
@@ -70,7 +66,7 @@ def pi2gert(str):
 	"serial communication between RPi and Gertduino"
 	print "pi2gert: %s" % str
 	waiting_for_echo = True
-	ser.write(str +"r\n")
+	ser.write(str +"\n")
 	global com_pi2gert
 	com_pi2gert = str
 	return
@@ -119,19 +115,41 @@ def interpret_gert2pi(data):
 def pi_getpicture():
    	"Fetches the latest picture and tells the Gertduino when it's done."
 	print "pi_getpicture running"
-	time.sleep(5)
+	#time.sleep(5)
 	#automount usb
    	#transfer picture to extHDD
-	subprocess.call(["rsync", "-a", "$dslr", "$hdd"])
+	subprocess.call(["rsync", "-a", "/media/KINGSTON/DCIM/101OLYMP/", "/media/extHDD/photobooth/raw/"])
    	#eject /media/KINGSTON
+	time.sleep(1)
 	subprocess.call(["sudo", "umount", "/media/KINGSTON"])
-   	pi2gert("pi2gert_gotPicture\n") #disableUSB
+	print "extHDD unmount"
+	pi2gert("pi2gert_gotPicture\n") #disableUSB
 	return
    
    
 def pi_photomerge():
 	"merges the latest picture(s) into a printable Photostripe"
 	print "pi_photomerge running"
+	
+	try:
+		empty = Image.open('../PiImage/layout/empty.png')
+		layout = Image.open('../PiImage/layout/layout1.png')
+		pic_raw = Image.open('../PiImage/testbild.JPG')
+		pic = pic_raw.resize((924,693),resample=0)
+		#pic.save('pic.JPG')
+		empty.paste(pic, (35, 460), mask=None)
+		empty.paste(pic.rotate(90, resample=0, expand=0), (1027,129), mask=None)
+		empty.paste(layout, (0,0), layout)
+		empty.save('testbild_output.png')
+		print "merge done"
+	
+	except IOError:
+		print('An error occured trying to read the file.')
+		
+	except:
+		print('An error occured.')
+	
+	
 	return
 
    
