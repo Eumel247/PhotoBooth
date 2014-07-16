@@ -3,6 +3,7 @@ import serial #serial communication on?
 import time
 import subprocess
 import os
+import random
 from PIL import Image, ImageOps
 
 # strings
@@ -137,14 +138,16 @@ def pi_photomerge():
 
 	global output_path
 	
+	layout = 'layout' + str(random.randint(1,3)) + '.png'
+	print layout
+
 	empty_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', 'empty.png')	
-	layout_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout',  'layout1.png')
+	layout_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', layout)
 	pic_raw_dir = '/media/extHDD/photobooth/raw'
 	output_dir = '/media/extHDD/photobooth/merged'
 
 # get path of last picture 	 
- 	files = sorted([ 
-    		f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
+ 	files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
  	print "Last picture: %s" % (files[-1],)
 	recent = files[-1]	
 	last_pic_path = os.path.join(pic_raw_dir, recent)
@@ -158,8 +161,8 @@ def pi_photomerge():
 	pic_raw = Image.open(last_pic_path)
 	pic = pic_raw.resize((924,693),resample=0)
 	#pic.save('pic.JPG')
-	empty.paste(pic, (35, 460), mask=None)
-	empty.paste(pic.rotate(90, resample=0, expand=0), (1027,129), mask=None)
+	empty.paste(pic, (70, 460), mask=None)
+	empty.paste(pic.rotate(90, resample=0, expand=0), (1062,129), mask=None)
 	empty.paste(layout, (0,0), layout)
 	empty.save(output_path)
 	print "Output written to: %s" % (output_path)
