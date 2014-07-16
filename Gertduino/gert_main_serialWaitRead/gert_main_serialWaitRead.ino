@@ -62,7 +62,7 @@ String com_pi2gert = "";     // storage for pi2gert command
 boolean waiting_for_print = false;    // whether the pi_print() function is running
 boolean waiting_for_picture = false;    // whether the pi_print() function is running
 boolean waiting_for_echo = false; // waits for echo
-boolean waiting_for_confirmation = false; // waits for confirmation off the echoed command
+// boolean waiting_for_confirmation = false; // waits for confirmation off the echoed command
 int send_counter = 0; //triggers an check_echo malfunction
 int watchdog = 0; // resets the status after 10 sec
 
@@ -369,38 +369,35 @@ void check_serial() {
   else {
     LEDstatus[statusLED] = off; //blau, debug
   }
+  
+/* handshake pi2gert
   if(waiting_for_confirmation) {
     if(inputString == "confirmed") {
       waiting_for_confirmation = false;
       interpret_pi2gert(inputString);
     }
-    //else {
-      //Serial.println("gert didn't receive confirmation from pi! (" + inputString + ")")
-      //echo_pi2gert(inputString); // if pi's check_echo() trys to resend command
-    //}
-    
     return;
   }
-  
-  if(waiting_for_picture) {
+*/ 
+//else
+  //if(waiting_for_picture) {
     //Debug
     matrix.clear();
     matrix.drawBitmap(0, 0, nine_bmp, 8, 8, LED_RED);
     matrix.writeDisplay();     
-  }
-  else {
-    //Debug
-    matrix.clear();
-    matrix.drawBitmap(0, 0, eight_bmp, 8, 8, LED_RED);
-    matrix.writeDisplay();
+    
   
+    interpret_pi2gert(inputString);
+  //}  
+    
+/*handshake pi2gert    
     com_pi2gert = inputString;
     echo_pi2gert(inputString);
-  }
-    
-  }
+*/
+      
+  } //if serial avalaible
   
-}
+} //check_serial
 
 //communication gert2pi//////////////////////////////////////////////////////////
 void gert2pi(String str) {
@@ -457,6 +454,8 @@ void check_echo(String echo) {
 }
 
 //communication pi2gert//////////////////////////////////////////////////////////
+
+/* handshake pi2gert
 void echo_pi2gert(String inputString) {
   //debug
   matrix.clear();
@@ -467,11 +466,18 @@ void echo_pi2gert(String inputString) {
   waiting_for_confirmation = true;
   Serial.println(inputString);
 }
+*/
 
 void interpret_pi2gert(String inputString) {
   if(inputString == "pi2gert_printDone") {
     //Serial.println("Print done!");
     waiting_for_print = false;
+    
+    //Debug
+    matrix.clear();
+    matrix.drawBitmap(0, 0, eight_bmp, 8, 8, LED_RED);
+    matrix.writeDisplay();
+    
     inputString = "";
   }
   
@@ -481,6 +487,8 @@ void interpret_pi2gert(String inputString) {
     inputString = "";
   }
 }
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
