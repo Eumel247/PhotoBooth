@@ -118,14 +118,14 @@ def interpret_gert2pi(data):
 def pi_getpicture():
    	"Fetches the latest picture and tells the Gertduino when it's done."
 	print "pi_getpicture running"
-	time.sleep(5)
+	time.sleep(3) #give the camera a chance to connect
 	#mount usb
    	#subprocess.Popen( "mount /dev/sdb1")
 	#subprocess.call(["mount", "/dev/sdb1/"])
 	#transfer picture to extHDD
 	subprocess.call(["rsync", "-a", "/media/KINGSTON/DCIM/101OLYMP/", "/media/extHDD/photobooth/raw/"])
    	#eject /media/KINGSTON
-	time.sleep(1)
+	time.sleep(1) #ensure that the writing is done, probably not necessary
 	subprocess.call(["sudo", "umount", "/media/KINGSTON"])
 	print "extHDD unmount"
 	pi2gert("pi2gert_gotPicture\n") #disableUSB

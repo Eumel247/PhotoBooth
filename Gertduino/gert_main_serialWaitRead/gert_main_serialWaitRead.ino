@@ -185,13 +185,14 @@ void setup(){
   
   pinMode(shutterBUT, INPUT_PULLUP); // enable the internal pull-up resistor
   //pinMode(testBUT, INPUT_PULLUP); // internal, right push-button, test-purposes
-  pinMode(printBUT, INPUT_PULLUP);
+  pinMode(printBUT, INPUT_PULLUP); // internal, right push-button
+  pinMode(usbBUT, INPUT_PULLUP);
   pinMode(debugLED, OUTPUT); // initialize the LED pins as output
   pinMode(printLED, OUTPUT); 
   pinMode(warnLED, OUTPUT); 
   pinMode(statusLED, OUTPUT);
   pinMode(loopLED, OUTPUT);
-  pinMode(usbLED, OUTPUT); // internal, right push-button
+  pinMode(usbLED, OUTPUT); // 
   pinMode(focusOUT, OUTPUT); // initialize the focus and shutter pins as output
   pinMode(shutterOUT, OUTPUT);
   pinMode(usbOUT, OUTPUT); // initialize the output pin which goes to the relay (USB on - off)
@@ -211,24 +212,24 @@ void loop(){
     check_serial();
   //}
   
-//  if (resetMetro.check() == 1) {
-//    if (waiting_for_picture || waiting_for_echo || waiting_for_confirmation) { //12 sec
-//      watchdog += 10;
-//    }
-//    else if (waiting_for_print) { //120 sec
-//      watchdog += 1;
-//    }
-//    else {
-//      watchdog = 0;
-//    }
-//    if (watchdog == 120) {
-//      waiting_for_picture = false;
-//      waiting_for_print = false;
-//      waiting_for_echo = false;
-//      waiting_for_confirmation = false;
-//      watchdog = 0;
-//    }
-//  }
+ if (resetMetro.check() == 1) {
+   if (waiting_for_picture || waiting_for_echo) { //12 sec // || waiting_for_confirmation
+     watchdog += 10;
+   }
+   else if (waiting_for_print) { //120 sec
+     watchdog += 1;
+   }
+   else {
+     watchdog = 0;
+   }
+   if (watchdog == 120) {
+     waiting_for_picture = false;
+     waiting_for_print = false;
+     waiting_for_echo = false;
+//     waiting_for_confirmation = false;
+     watchdog = 0;
+   }
+ }
   
   if (ledMetro.check() == 1) { // check if the metro has passed its interval .
   	int i = 0; // loop counter
@@ -298,16 +299,16 @@ void loop(){
     LEDstatus[usbLED] = fast;
   }
   
-//  if (usbVal == LOW && !waiting_for_picture) { //USB switch
-//    if (digitalRead(usbOUT) == LOW) {
-//      digitalWrite(usbOUT, HIGH);
-//      LEDstatus[usbLED] = slow;
-//    }
-//    else {
-//      digitalWrite(usbOUT, LOW);
-//      LEDstatus[usbLED] = off;
-//    }
-//  }
+ if (usbVal == LOW && !waiting_for_picture) { //USB switch (right push button)
+   if (digitalRead(usbOUT) == LOW) {
+     digitalWrite(usbOUT, HIGH);
+     LEDstatus[usbLED] = slow;
+   }
+   else {
+     digitalWrite(usbOUT, LOW);
+     LEDstatus[usbLED] = off;
+   }
+ }
   
   /////SHUTTER/////
   if (shutterVal == LOW && !waiting_for_picture) {
