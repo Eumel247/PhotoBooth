@@ -2,14 +2,11 @@
 import serial #serial communication on?
 import time
 import subprocess
-import os
-import random
 from PIL import Image, ImageOps
 
 # strings
 com_gert2pi = ""
 com_pi2gert = ""
-output_path = ""
 
 # status booleans (flags)
 waiting_for_echo = False
@@ -120,13 +117,14 @@ def pi_getpicture():
 	print "pi_getpicture running"
 	time.sleep(5)
 	#mount usb
-   	#subprocess.Popen( "mount /dev/sdb1")
-	#subprocess.call(["mount", "/dev/sdb1/"])
+	   	
+#subprocess.call(["mount", "/dev/sdb1/"])
 	#transfer picture to extHDD
-	subprocess.call(["rsync", "-a", "/media/KINGSTON_/DCIM/100OLYMP/", "/media/extHDD/photobooth/raw/"])
+	
+subprocess.call(["rsync", "-a", "/media/KINGSTON/DCIM/101OLYMP/", "/media/extHDD/photobooth/raw/"])
    	#eject /media/KINGSTON
 	time.sleep(1)
-	subprocess.call(["sudo", "umount", "/media/KINGSTON_"])
+	subprocess.call(["sudo", "umount", "/media/KINGSTON"])
 	print "extHDD unmount"
 	pi2gert("pi2gert_gotPicture\n") #disableUSB
 	return
@@ -135,43 +133,24 @@ def pi_getpicture():
 def pi_photomerge():
 	"merges the latest picture(s) into a printable Photostripe"
 	print "pi_photomerge running"
-
-	global output_path
 	
-	layout = 'layout' + str(random.randint(1,3)) + '.png'
-	print layout
-
-	empty_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', 'empty.png')	
-	layout_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', layout)
-	pic_raw_dir = '/media/extHDD/photobooth/raw'
-	output_dir = '/media/extHDD/photobooth/merged'
-
-# get path of last picture 	 
- 	files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
- 	print "Last picture: %s" % (files[-1],)
-	recent = files[-1]	
-	last_pic_path = os.path.join(pic_raw_dir, recent)
-#	print last_pic_path
-
-	output_path = os.path.join(output_dir, 'print_' + recent[:-4] + '.png')
-
-#	try:
-	empty = Image.open(empty_path)
-	layout = Image.open(layout_path)
-	pic_raw = Image.open(last_pic_path)
-	pic = pic_raw.resize((924,693),resample=0)
-	#pic.save('pic.JPG')
-	empty.paste(pic, (70, 460), mask=None)
-	empty.paste(pic.rotate(90, resample=0, expand=0), (1062,129), mask=None)
-	empty.paste(layout, (0,0), layout)
-	empty.save(output_path)
-	print "Output written to: %s" % (output_path)
+	try:
+		empty = Image.open('../PiImage/layout/empty.png')
+		layout = Image.open('../PiImage/layout/layout1.png')
+		pic_raw = Image.open('../PiImage/testbild.JPG')
+		pic = pic_raw.resize((924,693),resample=0)
+		#pic.save('pic.JPG')
+		empty.paste(pic, (35, 460), mask=None)
+		empty.paste(pic.rotate(90, resample=0, expand=0), (1027,129), mask=None)
+		empty.paste(layout, (0,0), layout)
+		empty.save('testbild_output.png')
+		print "merge done"
 	
-#	except IOError:
-#		print('An error occured trying to read the file.')
+	except IOError:
+		print('An error occured trying to read the file.')
 		
-#	except:
-#		print('An error occured.')
+	except:
+		print('An error occured.')
 	
 	
 	return
@@ -180,11 +159,7 @@ def pi_photomerge():
 def pi_print():
 	"print routine"
 	print "pi_print running"
-	
-	global output_path
-
-	subprocess.call(["lp", "-d", "Canon_CP800", output_path])
-
+	time.sleep(3)
 	pi2gert("pi2gert_printDone\n") #ready to print
 	return
 
