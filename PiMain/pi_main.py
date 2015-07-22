@@ -33,165 +33,167 @@ print "pi_main.py running";
 #        print ser.readline()[:-2]
 
 def check_serial():
-	"checks serial port for incoming communication"
-	global waiting_for_echo
-	global waiting_for_confirmation
-	global com_gert2pi
-	data = ser.read(9999) #max size (bit) of string
-    	#print "len(data):" #debug
-	#print len(data) #debug
-	#print data #debug
-	if len(data) > 1:
-        	print "Received:", data
-		if waiting_for_echo == True: # pi2gert
-			#waiting_for_echo = False
-			check_echo(data)
-			return
-		if waiting_for_confirmation == True: # gert2pi
-			if "confirmed" in data:
-				waiting_for_confirmation = False
-				interpret_gert2pi(com_gert2pi) 	
-				return
-			#else: 
-			#	print "Not confirmed! answer is:", data
-			#	echo_gert2pi
-		if "debug" in data:
-			print "Debug:" + data
-			return	
-		#Else: no flags set
-		global com_gert2pi
-		com_gert2pi = data
-		echo_gert2pi(data)
-	return
+        "checks serial port for incoming communication"
+        global waiting_for_echo
+        global waiting_for_confirmation
+        global com_gert2pi
+        data = ser.read(9999) #max size (bit) of string
+        #print "len(data):" #debug
+        #print len(data) #debug
+        #print data #debug
+        if len(data) > 1:
+                print "Received:", data
+                if waiting_for_echo == True: # pi2gert
+                        #waiting_for_echo = False
+                        check_echo(data)
+                        return
+                if waiting_for_confirmation == True: # gert2pi
+                        if "confirmed" in data:
+                                waiting_for_confirmation = False
+                                interpret_gert2pi(com_gert2pi)  
+                                return
+                        #else: 
+                        #       print "Not confirmed! answer is:", data
+                        #       echo_gert2pi
+                if "debug" in data:
+                        print "Debug:" + data
+                        return  
+                #Else: no flags set
+                global com_gert2pi
+                com_gert2pi = data
+                echo_gert2pi(data)
+        return
 
-#################### communication pi2gert ####################	
+#################### communication pi2gert #################### 
 def pi2gert(str):
-	"serial communication between RPi and Gertduino"
-	print "pi2gert: %s" % str
-	#waiting_for_echo = True
-	ser.write(str +"\n")
-	global com_pi2gert
-	com_pi2gert = str
-	return
+        "serial communication between RPi and Gertduino"
+        print "pi2gert: %s" % str
+        #waiting_for_echo = True
+        ser.write(str +"\n")
+        global com_pi2gert
+        com_pi2gert = str
+        return
 
 #def check_echo(echo):
-#	"check if Gertduino got the command right"
-#	global send_counter
-#	if send_counter == 10:
-#		send_counter = 0
-#		print "check_echo timeout, aborting communication!"
-#		return
-#	if echo == com_pi2gert:
-#		print "Correct echo:", echo
-#		ser.write("confirmed\n")
-#		send_counter = 0
-#	else:
-#		send_counter += 1
-#		print "Wrong echo:", echo
-#		print "Resend:", com_pi2gert
-#		pi2gert(com_pi2gert) # send again
-#	time.sleep(0.5)
-#	return		
-	
+#       "check if Gertduino got the command right"
+#       global send_counter
+#       if send_counter == 10:
+#               send_counter = 0
+#               print "check_echo timeout, aborting communication!"
+#               return
+#       if echo == com_pi2gert:
+#               print "Correct echo:", echo
+#               ser.write("confirmed\n")
+#               send_counter = 0
+#       else:
+#               send_counter += 1
+#               print "Wrong echo:", echo
+#               print "Resend:", com_pi2gert
+#               pi2gert(com_pi2gert) # send again
+#       time.sleep(0.5)
+#       return          
+        
 #################### communication gert2pi ####################
 def echo_gert2pi(data):
-	#print data #debug
-	global waiting_for_confirmation
-	print "Echo: " + data
-	waiting_for_confirmation = True
-	ser.write(data +"\n") #% data
-	return
-	
+        #print data #debug
+        global waiting_for_confirmation
+        print "Echo: " + data
+        waiting_for_confirmation = True
+        ser.write(data +"\n") #% data
+        return
+        
 def interpret_gert2pi(data):
-	"interprets the command from RPi"
-	print "interpret running"
-	if "gert2pi_print" in data:
-    		pi_photomerge()
-		pi_print()
-	elif "gert2pi_getPicture" in data:
-    		pi_getpicture()	
-	else:	
-		print "command not known"
-	return
+        "interprets the command from RPi"
+        print "interpret running"
+        if "gert2pi_print" in data:
+                pi_photomerge()
+                pi_print()
+        elif "gert2pi_getPicture" in data:
+                pi_getpicture() 
+        else:   
+                print "command not known"
+        return
 
-#################### subprocesses ####################	
+#################### subprocesses ####################  
 def pi_getpicture():
-   	"Fetches the latest picture and tells the Gertduino when it's done."
-	print "pi_getpicture running"
-	time.sleep(3) #give the camera a chance to connect
-	#mount usb
-   	#subprocess.Popen( "mount /dev/sdb1")
-	#subprocess.call(["mount", "/dev/sdb1/"])
-	#transfer picture to extHDD
-	subprocess.call(["rsync", "-a", "/media/KINGSTON/DCIM/101OLYMP/", "/media/extHDD/photobooth/raw/"])
-   	#eject /media/KINGSTON
-	time.sleep(1) #ensure that the writing is done, probably not necessary
-	subprocess.call(["sudo", "umount", "/media/KINGSTON"])
-	print "extHDD unmount"
-	pi2gert("pi2gert_gotPicture\n") #disableUSB
-	return
+        "Fetches the latest picture and tells the Gertduino when it's done."
+        print "pi_getpicture running"
+        time.sleep(10) #give the camera a chance to connect
+        #raw_input("Kamera verbunden?")
+        #mount usb
+        #subprocess.Popen( "mount /dev/sdb1")
+        #subprocess.call(["mount", "/dev/sdb1/"])
+        #transfer picture to SD
+        subprocess.call(["rsync", "-a", "/media/usb0/DCIM/100OLYMP/", "/home/pi/bilder/raw/"])
+        #eject /media/KINGSTON
+        time.sleep(1) #ensure that the writing is done, probably not necessary
+        #raw_input("Bilder uebertragen?")
+        #subprocess.call(["sudo", "umount", "/media/usb0/"])
+        print "camera unmount"
+        pi2gert("pi2gert_gotPicture\n") #disableUSB
+        return
    
    
 def pi_photomerge():
-	"merges the latest picture(s) into a printable Photostripe"
-	print "pi_photomerge running"
+        "merges the latest picture(s) into a printable Photostripe"
+        print "pi_photomerge running"
 
-	global output_path
-	
-	layout = 'layout' + str(random.randint(1,3)) + '.png'
-	print layout
+        global output_path
+        
+        layout = 'layout' + str(random.randint(1,3)) + '.png'
+        print layout
 
-	empty_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', 'empty.png')	
-	layout_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', layout)
-	pic_raw_dir = '/media/extHDD/photobooth/raw'
-	output_dir = '/media/extHDD/photobooth/merged'
+        empty_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', 'empty.png')    
+        layout_path = os.path.join(os.path.dirname(__file__), '..', 'PiImage', 'layout', layout)
+        pic_raw_dir = '/home/pi/bilder/raw/'
+        output_dir = '/home/pi/bilder/merged/'
 
-# get path of last picture 	 
- 	files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
- 	print "Last picture: %s" % (files[-1],)
-	recent = files[-1]	
-	last_pic_path = os.path.join(pic_raw_dir, recent)
-#	print last_pic_path
+# get path of last picture       
+        files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
+        print "Last picture: %s" % (files[-1],)
+        recent = files[-1]      
+        last_pic_path = os.path.join(pic_raw_dir, recent)
+#       print last_pic_path
 
-	output_path = os.path.join(output_dir, 'print_' + recent[:-4] + '.png')
+        output_path = os.path.join(output_dir, 'print_' + recent[:-4] + '.png')
 
-#	try:
-	empty = Image.open(empty_path)
-	layout = Image.open(layout_path)
-	pic_raw = Image.open(last_pic_path)
-	pic = pic_raw.resize((924,693),resample=0)
-	#pic.save('pic.JPG')
-	empty.paste(pic, (70, 460), mask=None)
-	empty.paste(pic.rotate(90, resample=0, expand=0), (1062,129), mask=None)
-	empty.paste(layout, (0,0), layout)
-	empty.save(output_path)
-	print "Output written to: %s" % (output_path)
-	
-#	except IOError:
-#		print('An error occured trying to read the file.')
-		
-#	except:
-#		print('An error occured.')
-	
-	
-	return
+#       try:
+        empty = Image.open(empty_path)
+        layout = Image.open(layout_path)
+        pic_raw = Image.open(last_pic_path)
+        pic = pic_raw.resize((924,693),resample=0)
+        #pic.save('pic.JPG')
+        empty.paste(pic, (70, 460), mask=None)
+        empty.paste(pic.rotate(90, resample=0, expand=0), (1062,129), mask=None)
+        empty.paste(layout, (0,0), layout)
+        empty.save(output_path)
+        print "Output written to: %s" % (output_path)
+        
+#       except IOError:
+#               print('An error occured trying to read the file.')
+                
+#       except:
+#               print('An error occured.')
+        
+        
+        return
 
    
 def pi_print():
-	"print routine"
-	print "pi_print running"
-	
-	global output_path
+        "print routine"
+        print "pi_print running"
+        
+        global output_path
 
-	subprocess.call(["lp", "-d", "Canon_CP800", output_path])
+        subprocess.call(["lp", "-d", "Canon_CP800", output_path])
 
-	pi2gert("pi2gert_printDone\n") #ready to print
-	return
+        pi2gert("pi2gert_printDone\n") #ready to print
+        return
 
-	
+        
 
 
 #################### loop ####################
 while True:
-	check_serial()
-#	print waiting_for_confirmation
+        check_serial()
+#       print waiting_for_confirmation
