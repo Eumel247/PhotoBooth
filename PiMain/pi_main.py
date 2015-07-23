@@ -149,7 +149,7 @@ def pi_photomerge():
         output_dir = '/home/pi/bilder/merged/'
 
 # get path of last picture       
-        files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('LC')])
+        files = sorted([f for f in os.listdir(pic_raw_dir) if f.startswith('CM')])
         print "Last picture: %s" % (files[-1],)
         recent = files[-1]      
         last_pic_path = os.path.join(pic_raw_dir, recent)
